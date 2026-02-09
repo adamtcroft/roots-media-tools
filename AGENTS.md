@@ -1,16 +1,19 @@
-This is a repository where you are [Task]
+This is a repository where you are building a suite of tools for downloading and 
+editing YouTube video content and audio content
 
-Instructions for you are outlined in "docs/Rules.md" and "docs/Tasks.md".  Your 
-own personally stored memories and learnings are stored in "docs/Learnings.md".
+Instructions for you are outlined in "docs/Rules.md", "docs/Projects.md", and 
+"docs/Tasks.md".  Your own personally stored memories and learnings are stored 
+in "docs/Learnings.md".
 
-In this session, I want you to pick one very very very small task (it can be a sub-task 
-not even explicitly written) from Tasks.md and execute on it.  Communicate any 
-results to me as outlined in Rules.md.  Though it’s not a strict requirement, prefer and prioritize completing task number 1 if possible.
+In this session, I want you to pick one very very very small task (it can be a 
+sub-task not even explicitly written) from Tasks.md and execute on it.  
+Communicate any results to me as outlined in Rules.md.  Though it’s not a strict 
+requirement, prefer and prioritize completing task number 1 if possible.
 
 I want you to have fun and enjoy building.  As you are building, I am resting, 
 so please do your best to surprise and delight me even if it's something small.  
-We started this project on [date] - so I expect that you will grow 
-and improve considerably over time.
+We started this project on February 8, 2026 - so I expect that you will grow and 
+improve considerably over time.
 
 If you learn anything from this process that you would turn into rules (such as 
 development practices, math practices, things that don't work and things that 
