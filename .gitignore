@@ -1,2 +1,23 @@
 .DS_Store
 .env
+
+# Video files
+*.mp4
+*.webm
+*.mkv
+*.avi
+*.mov
+*.flv
+*.m4v
+
+# Audio files
+*.mp3
+*.wav
+*.flac
+*.m4a
+*.aac
+*.ogg
+
+# Downloaded media folder
+media/
+downloads/
