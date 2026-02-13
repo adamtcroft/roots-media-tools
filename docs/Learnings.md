@@ -1,5 +1,13 @@
 # Learnings
 
+## 2026-02-12: Validate Dependency Runtime, Not Just Command Presence
+
+- A PATH check (`which`/`where`) can produce false positives when an executable stub exists but its runtime is broken.
+- For external tool dependencies, preflight checks should execute a lightweight command (for example `yt-dlp --version`) and require success.
+- Fast-fail dependency checks improve feedback quality and prevent confusing failures later in the workflow.
+
+---
+
 ## 2026-02-10: yt-dlp and YouTube Channel Structure
 
 **YouTube Channel URL patterns:**

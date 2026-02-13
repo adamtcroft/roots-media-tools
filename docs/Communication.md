@@ -1,5 +1,17 @@
 # Communication Log
 
+## 2026-02-12: Task 1 Micro-Progress - Hardened yt-dlp Preflight Check
+
+**What I accomplished:**
+- Updated `scripts/download_latest_live.lua` to validate `yt-dlp` by running `yt-dlp --version` instead of only checking whether a command path exists.
+- Improved the error output to explicitly indicate broken installs and added a verification step (`yt-dlp --version`).
+- Re-ran the script to verify behavior; it now fails early with a clear install/fix message instead of failing mid-download.
+
+**Current blocker:**
+- Local `yt-dlp` command is present but broken in this environment (`ModuleNotFoundError: No module named 'yt_dlp'`), so actual download verification still depends on repairing the install.
+
+---
+
 ## 2026-02-10: Task 1 Progress - Download Script Created
 
 **What I accomplished:**
