@@ -35,15 +35,83 @@ local function path_join(...)
     return table.concat(parts, sep)
 end
 
--- Check if yt-dlp is available
+local execute_command
+local ytdlp_command_prefix = "yt-dlp"
+
+local function normalize_output(output)
+    return output:gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+local function is_ytdlp_output_failure(output)
+    return output:match("not found")
+        or output:match("is not recognized")
+        or output:match("Traceback")
+        or output:match("ModuleNotFoundError")
+end
+
+local function get_site_package_paths()
+    local paths = {}
+    if get_os() ~= "unix" then
+        return paths
+    end
+
+    local handle = io.popen('ls -d /usr/lib/python*/site-packages/yt_dlp 2>/dev/null')
+    if not handle then
+        return paths
+    end
+
+    for line in handle:lines() do
+        local site_packages = line:match("^(.*)/yt_dlp$")
+        if site_packages then
+            table.insert(paths, site_packages)
+        end
+    end
+    handle:close()
+    return paths
+end
+
+local function build_ytdlp_candidates()
+    local candidates = {"yt-dlp"}
+    for _, site_packages in ipairs(get_site_package_paths()) do
+        table.insert(
+            candidates,
+            ('PYTHONPATH="%s${PYTHONPATH:+:$PYTHONPATH}" yt-dlp'):format(site_packages)
+        )
+    end
+    return candidates
+end
+
+-- Check if yt-dlp is available and runnable, including fallback for Python path mismatch.
 local function check_ytdlp()
-    local cmd = get_os() == "windows" and "where yt-dlp >nul 2>&1" or "which yt-dlp >/dev/null 2>&1"
-    local result = os.execute(cmd)
-    return result == 0 or result == true
+    for _, candidate in ipairs(build_ytdlp_candidates()) do
+        local output = execute_command(candidate .. " --version 2>&1")
+        if output then
+            output = normalize_output(output)
+            if output ~= "" and not is_ytdlp_output_failure(output) then
+                return true, output, candidate
+            end
+        end
+    end
+
+    local output = execute_command("yt-dlp --version 2>&1")
+    if not output then
+        return false, "Unable to execute yt-dlp"
+    end
+
+    output = normalize_output(output)
+    if output == "" then
+        return false, "yt-dlp returned no output"
+    end
+
+    if is_ytdlp_output_failure(output) then
+        return false, output
+    end
+
+    return true, output, "yt-dlp"
 end
 
 -- Execute a command and return stdout
-local function execute_command(cmd)
+execute_command = function(cmd)
     local handle = io.popen(cmd)
     if not handle then
         return nil, "Failed to execute command"
@@ -66,8 +134,12 @@ local function main()
     print("=== Roots Community Church - Live Video Downloader ===\n")
     
     -- Check for yt-dlp
-    if not check_ytdlp() then
-        print("ERROR: yt-dlp is not installed or not in PATH")
+    local ytdlp_ok, ytdlp_details, detected_command = check_ytdlp()
+    if not ytdlp_ok then
+        print("ERROR: yt-dlp is not installed correctly, not in PATH, or failed to run")
+        if ytdlp_details and ytdlp_details ~= "" then
+            print("Details: " .. ytdlp_details)
+        end
         print("")
         print("Please install yt-dlp:")
         print("  - Arch Linux: sudo pacman -S yt-dlp")
@@ -75,8 +147,11 @@ local function main()
         print("  - macOS: brew install yt-dlp")
         print("  - Windows: winget install yt-dlp")
         print("  - Or via pip: pip install yt-dlp")
+        print("")
+        print("After install, verify with: yt-dlp --version")
         os.exit(1)
     end
+    ytdlp_command_prefix = detected_command
     
     -- Determine output directory
     local output_dir = arg[1] or DEFAULT_OUTPUT_DIR
@@ -104,7 +179,8 @@ local function main()
     local output_template = path_join(output_dir, "%(title)s [%(id)s].%(ext)s")
     
     local ytdlp_cmd = string.format(
-        'yt-dlp --playlist-items 1 -o "%s" --write-info-json --write-thumbnail "%s"',
+        '%s --playlist-items 1 -o "%s" --write-info-json --write-thumbnail "%s"',
+        ytdlp_command_prefix,
         output_template,
         LIVE_PLAYLIST_URL
     )
