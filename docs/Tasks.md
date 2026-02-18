@@ -1,9 +1,8 @@
-1. remove every1. Per the last message in communications, modify 
-   download_latest_live.lua.  Make sure you pull captions from the video.  You 
-   don't need to pull anything BUT the video and captions.  Notice that in the 
-   video, before the sermon, there is subdued music and/or a prayer.  After the 
-   sermon, there is also a prayer and transition into music.  The sermon comes 
-   in the middle of the video roughly.  With this information, would you modify 
-   download_latest_live.lua to download only what we need, then run it to 
-   actually download latest, then see if you can find a start and stop timestamp 
-   for the sermon and share that in Communication.md
+1. Based on your information for sermon start and end time in communication.md - 
+   it seems like you would make an incredibly successful edit.  If possible, 
+   develop scripts in .sh or .lua to determine the start and end times.  Develop 
+   a third script which will save a new video of just the sermon itself, based 
+   on the start and end times.  Test each script for output.  You should be able 
+   to use the timing scripts to feed into the edit script and output a video of 
+   just the sermon.
+

@@ -1,5 +1,14 @@
 # Learnings
 
+## 2026-02-16: Keep Two Sermon Start Markers (Full vs Scripture-Anchored)
+
+- For sermon clipping from livestream captions, capture both:
+  - Full speaking start right after the pre-sermon prayer/intro (useful for complete sermon exports).
+  - First scripture transition marker (useful for tighter teaching-only clips).
+- This keeps one transcript pass useful for multiple downstream edit styles.
+
+---
+
 ## 2026-02-16: Use Metadata + Auto-Captions Before Heavy Media Analysis
 
 - For sermon extraction planning, check `<video>.info.json` first for description scripture references and auto-caption availability before running expensive video/audio analysis.

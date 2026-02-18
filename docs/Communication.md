@@ -1,5 +1,27 @@
 # Communication Log
 
+## 2026-02-16: Task 1 Complete - Downloader Limited to Video + Captions, Sermon Window Identified
+
+**What I changed:**
+- Updated `scripts/download_latest_live.lua` to download only:
+  - Video
+  - Auto-captions (`en.*` in `.vtt`)
+- Removed metadata side-output flags (`--write-info-json`, `--write-thumbnail`) from the downloader command.
+
+**Run result:**
+- Executed: `lua scripts/download_latest_live.lua`
+- Most recent item returned by `@rootscommunitychurch2868/streams` at run time was:
+  - `Roots Community Church Livestream 2⧸8⧸26 [zPzG6gRlke8]`
+- Captions downloaded successfully:
+  - `media/Roots Community Church Livestream 2⧸8⧸26 [zPzG6gRlke8].en.vtt`
+
+**Sermon timestamps (from caption cues):**
+- Sermon start (full speaking start after pre-sermon prayer): `00:23:04`
+- Sermon end (transition into response/music): `00:50:19`
+- Tighter scripture-anchored start option: `00:24:33` (`"as we jump back into Acts..."`)
+
+---
+
 ## 2026-02-16: Task 2 Complete - Sermon Detection Concepts from 2026-02-08 Livestream
 
 **Video reviewed:**

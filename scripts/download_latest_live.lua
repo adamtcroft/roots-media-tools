@@ -173,13 +173,12 @@ local function main()
         or ('mkdir -p "%s"'):format(output_dir)
     os.execute(mkdir_cmd)
     
-    -- Build yt-dlp command to download the most recent live stream
-    -- --playlist-items 1 gets only the most recent video
-    -- -o specifies output template
+    -- Build yt-dlp command to download only the most recent live stream video
+    -- plus English captions (no thumbnails/info-json side files).
     local output_template = path_join(output_dir, "%(title)s [%(id)s].%(ext)s")
     
     local ytdlp_cmd = string.format(
-        '%s --playlist-items 1 -o "%s" --write-info-json --write-thumbnail "%s"',
+        '%s --playlist-items 1 -o "%s" --write-auto-subs --sub-langs "en.*" --sub-format "vtt" "%s"',
         ytdlp_command_prefix,
         output_template,
         LIVE_PLAYLIST_URL
