@@ -1,5 +1,40 @@
 # Communication Log
 
+## 2026-02-20: Added Sermon Start Finder for VTT Captions
+
+**What I changed:**
+- Added `scripts/find_sermon_start.lua` to scan a `.vtt` transcript and print the
+  first cue start time that matches sermon start markers.
+- Defaults to explicit manual markers (`[sermon]`, `sermon start`, `message begins`);
+  optional `--auto` adds a few common spoken phrases.
+
+**Usage:**
+```bash
+lua scripts/find_sermon_start.lua media/<captions>.vtt
+lua scripts/find_sermon_start.lua media/<captions>.vtt --auto
+lua scripts/find_sermon_start.lua media/<captions>.vtt --markers "sermon start|message begins"
+```
+
+**Why this helps:**
+- Gives you a fast first-pass sermon start timestamp from captions without
+  manually scrubbing the entire video.
+
+## 2026-02-19: Added VTT Phrase Scanner For Sermon Marker Discovery
+
+**What I changed:**
+- Added `scripts/find_vtt_phrase.lua` to scan a `.vtt` transcript and print cue
+  start times where a phrase appears (case-insensitive by default).
+
+**Usage:**
+```bash
+lua scripts/find_vtt_phrase.lua media/<captions>.vtt "acts 2"
+lua scripts/find_vtt_phrase.lua media/<captions>.vtt "let's pray" --case-sensitive
+```
+
+**Why this helps:**
+- Gives you a fast, low-effort way to locate likely sermon start/end cues from
+  captions before hard-coding or automating the exact time window.
+
 ## 2026-02-16: Task 1 Complete - Downloader Limited to Video + Captions, Sermon Window Identified
 
 **What I changed:**
