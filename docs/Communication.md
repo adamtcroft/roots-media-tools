@@ -1,5 +1,23 @@
 # Communication Log
 
+## 2026-02-21: Added Sermon End Finder for VTT Captions
+
+**What I changed:**
+- Added `scripts/find_sermon_end.lua` to scan a `.vtt` transcript and print the
+  last cue end time that matches sermon end markers.
+- Defaults to explicit manual markers; optional `--auto` adds common closing
+  phrases to widen the net.
+
+**Usage:**
+```bash
+lua scripts/find_sermon_end.lua media/<captions>.vtt
+lua scripts/find_sermon_end.lua media/<captions>.vtt --auto
+lua scripts/find_sermon_end.lua media/<captions>.vtt --markers "sermon end|benediction"
+```
+
+**Why this helps:**
+- Provides a quick sermon end timestamp from captions without a full manual scrub.
+
 ## 2026-02-20: Added Sermon Start Finder for VTT Captions
 
 **What I changed:**
