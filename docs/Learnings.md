@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-02-22: Prefer Re-Encode Default for Timestamp-Exact Sermon Clips
+
+- `ffmpeg -c copy` can produce clip durations that drift from requested start/end boundaries because cuts are keyframe-aligned.
+- For reliable sermon windows based on exact timestamps, default to re-encode and keep stream-copy as an optional fast mode.
+
+---
+
 ## 2026-02-16: Keep Two Sermon Start Markers (Full vs Scripture-Anchored)
 
 - For sermon clipping from livestream captions, capture both:

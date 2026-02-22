@@ -1,5 +1,25 @@
 # Communication Log
 
+## 2026-02-22: Task 1 Complete - Added Sermon Clip Export Script
+
+**What I changed:**
+- Added `scripts/export_sermon_clip.lua` to export a sermon-only video from a source file using explicit `--start` and `--end` times.
+- Default mode uses re-encode for more accurate cut boundaries; `--copy` is available for faster stream copy.
+- Script auto-builds an output name when `--output` is not provided.
+
+**Usage:**
+```bash
+lua scripts/export_sermon_clip.lua media/<video>.mkv --start 00:23:04 --end 00:50:19
+lua scripts/export_sermon_clip.lua media/<video>.mkv --start 00:23:04 --end 00:50:19 --output media/sermon.mkv
+lua scripts/export_sermon_clip.lua media/<video>.mkv --start 00:23:04 --end 00:50:19 --copy
+```
+
+**Verification run:**
+- Command:
+  - `lua scripts/export_sermon_clip.lua "media/Roots Community Church Livestream 2⧸8⧸26 [zPzG6gRlke8].mkv" --start 00:00:10 --end 00:00:20 --output "media/test-sermon-clip-accurate.mkv"`
+- Probe result:
+  - `ffprobe` reported `duration=10.021000` for the test output clip.
+
 ## 2026-02-21: Added Sermon End Finder for VTT Captions
 
 **What I changed:**
