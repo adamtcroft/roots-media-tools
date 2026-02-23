@@ -162,9 +162,10 @@ if not command_succeeds("ffmpeg -version >/dev/null 2>&1") then
 end
 
 local cmd_parts
+local ffmpeg_base = "ffmpeg -hide_banner -loglevel error -nostats -y"
 if use_copy then
     cmd_parts = {
-        "ffmpeg -y",
+        ffmpeg_base,
         "-ss " .. start_ff,
         "-i " .. shell_quote(input_path),
         "-t " .. duration_ff,
@@ -173,7 +174,7 @@ if use_copy then
     }
 else
     cmd_parts = {
-        "ffmpeg -y",
+        ffmpeg_base,
         "-ss " .. start_ff,
         "-i " .. shell_quote(input_path),
         "-t " .. duration_ff,
@@ -190,8 +191,6 @@ print("Start:  " .. start_ff)
 print("End:    " .. end_ff)
 print("Output: " .. output_path)
 print("Mode:   " .. (use_copy and "stream copy (fast, less precise)" or "re-encode (accurate boundaries)"))
-print("")
-print("Command: " .. cmd)
 print("")
 
 if not command_succeeds(cmd) then

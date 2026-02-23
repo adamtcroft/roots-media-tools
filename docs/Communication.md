@@ -1,5 +1,15 @@
 # Communication Log
 
+## 2026-02-23: Quieted ffmpeg Output For Sermon Exports
+
+**What I changed:**
+- Updated `scripts/export_sermon_clip.lua` to invoke ffmpeg with:
+  - `-hide_banner -loglevel error -nostats`
+- Removed the printed ffmpeg command to keep runs quiet by default.
+
+**Result:**
+- Export runs now emit only the script’s short status lines unless ffmpeg hits an error.
+
 ## 2026-02-23: Added Sermon Window Detector With Prayer/Response Heuristics
 
 **What I changed:**
