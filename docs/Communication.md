@@ -1,5 +1,21 @@
 # Communication Log
 
+## 2026-02-23: Sermon Window Start Now Anchors To First Greeting After Prayer
+
+**What I changed:**
+- Updated `scripts/find_sermon_window.lua` to shift the detected `START` forward
+  to the first nearby greeting cue (ex: "good morning") after the opening
+  prayer, so exports don’t start on awkward transition fragments.
+
+**Validation:**
+- 2⧸8 captions:
+  - Start: `00:23:05.919`
+  - End: `00:49:19.200` (unchanged)
+- 2⧸15 captions (also the most recent item in `@rootscommunitychurch2868/streams`
+  at run time):
+  - Start: `00:22:32.070`
+  - End: `00:52:13.520` (unchanged)
+
 ## 2026-02-23: Downloaded Fresh 2⧸8 Livestream and Exported Sermon
 
 **What I changed:**

@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-02-23: Anchor Sermon Start To Nearby Greeting Cue (Not Prayer-Exit Fragment)
+
+- YouTube auto-captions often repeat/overlap text across adjacent cues, which can make a “prayer end + 1 cue” start feel like it begins mid-thought.
+- After detecting the opening prayer end, scan the next ~3 minutes for a cue that *starts* with a greeting (ex: “good morning”) and use that cue as the sermon clip start.
+
+---
+
 ## 2026-02-23: Use Response Cues and [music] Tags to End Sermon
 
 - Auto-captions often include phrases like “would you just respond” or `[music]` near the sermon-to-music transition.

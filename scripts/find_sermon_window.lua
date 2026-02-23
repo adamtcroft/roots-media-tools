@@ -244,6 +244,13 @@ local secondary_prayer_start_markers = normalize_markers({
     "as we pray"
 })
 
+local greeting_markers = normalize_markers({
+    "good morning",
+    "good afternoon",
+    "good evening",
+    "welcome"
+})
+
 local music_markers = normalize_markers({
     "let's stand",
     "please stand",
@@ -532,9 +539,88 @@ else
     end
 end
 
+local function strip_leading_filler(text)
+    local cleaned = text:gsub("^%s+", "")
+    cleaned = cleaned:gsub("^>+%s*", "")
+    cleaned = cleaned:gsub("^%p+%s*", "")
+
+    local filler_patterns = {
+        "^(um)%s+",
+        "^(uh)%s+",
+        "^(well)%s+",
+        "^(alright)%s+",
+        "^(all%s+right)%s+",
+        "^(okay)%s+",
+        "^(ok)%s+",
+        "^(so)%s+"
+    }
+
+    for _ = 1, 3 do
+        local before = cleaned
+        for _, pattern in ipairs(filler_patterns) do
+            cleaned = cleaned:gsub(pattern, "")
+        end
+        cleaned = cleaned:gsub("^%p+%s*", "")
+        if cleaned == before then
+            break
+        end
+    end
+    return cleaned
+end
+
+local function cue_starts_with_greeting(haystack)
+    local cleaned = strip_leading_filler(haystack)
+    for _, marker in ipairs(greeting_markers) do
+        if cleaned:find(marker, 1, true) == 1 then
+            return true
+        end
+    end
+    return false
+end
+
+local function adjust_start_to_greeting(base_index)
+    local base_time = cues[base_index].start
+    local max_greeting_gap_seconds = 180
+
+    local max_index = math.min(#cues, base_index + 250)
+    local greeting_index = nil
+
+    for idx = base_index, max_index do
+        if (cues[idx].start - base_time) > max_greeting_gap_seconds then
+            break
+        end
+        if cue_starts_with_greeting(cues[idx].haystack) then
+            greeting_index = idx
+            break
+        end
+    end
+
+    if not greeting_index then
+        for idx = base_index, max_index do
+            if (cues[idx].start - base_time) > max_greeting_gap_seconds then
+                break
+            end
+            if text_has_marker(cues[idx].haystack, greeting_markers) then
+                greeting_index = idx
+                break
+            end
+        end
+    end
+
+    if greeting_index and greeting_index ~= base_index then
+        if debug then
+            print("DEBUG greeting_start_index=" .. greeting_index .. " text=" .. cues[greeting_index].text)
+        end
+        return greeting_index
+    end
+
+    return base_index
+end
+
 local sermon_start_index = nil
 if prayer_end_index then
-    sermon_start_index = math.min(prayer_end_index + 1, #cues)
+    local base_index = math.min(prayer_end_index + 1, #cues)
+    sermon_start_index = adjust_start_to_greeting(base_index)
 else
     sermon_start_index = sermon_marker_index
 end
