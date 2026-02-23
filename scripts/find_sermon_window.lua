@@ -368,13 +368,139 @@ if #cues == 0 then
     os.exit(2)
 end
 
-local sermon_marker_index = nil
-for idx, cue in ipairs(cues) do
-    if text_has_marker(cue.haystack, lowered_sermon_markers) or text_has_pattern(cue.haystack, sermon_patterns) then
-        sermon_marker_index = idx
-        break
+local function last_marker_before(index, markers, max_gap_seconds)
+    local ref_time = cues[index].start
+    for j = index - 1, 1, -1 do
+        if max_gap_seconds and (ref_time - cues[j].start) > max_gap_seconds then
+            break
+        end
+        if text_has_marker(cues[j].haystack, markers) then
+            return j
+        end
     end
+    return nil
 end
+
+local function has_marker(text, markers)
+    return text_has_marker(text, markers)
+end
+
+local function choose_sermon_marker()
+    local candidates = {}
+    for idx, cue in ipairs(cues) do
+        if text_has_marker(cue.haystack, lowered_sermon_markers) or text_has_pattern(cue.haystack, sermon_patterns) then
+            table.insert(candidates, idx)
+        end
+    end
+
+    if #candidates == 0 then
+        return nil
+    end
+
+    local total_duration = cues[#cues]["end"]
+    local min_ratio = 0.12
+    local hard_min_ratio = 0.08
+    local max_ratio = 0.85
+    local strong_sermon_markers = normalize_markers({"sermon", "message"})
+
+    local function find_opening_prayer_end()
+        local max_opening_ratio = 0.6
+        local max_prayer_length_seconds = 240
+        local max_music_gap_seconds = 1200
+        local early_ratio = 0.25
+
+        for idx = 1, #cues do
+            if cues[idx].start > total_duration * max_opening_ratio then
+                break
+            end
+            if text_has_marker(cues[idx].haystack, lowered_prayer_start_markers) then
+                local last_music = last_marker_before(idx, music_markers, max_music_gap_seconds)
+                if last_music or (cues[idx].start / total_duration) < early_ratio then
+                    for j = idx + 1, #cues do
+                        if (cues[j].start - cues[idx].start) > max_prayer_length_seconds then
+                            break
+                        end
+                        if text_has_marker(cues[j].haystack, lowered_prayer_end_markers) then
+                            return j
+                        end
+                    end
+                end
+            end
+        end
+        return nil
+    end
+
+    local opening_prayer_end = find_opening_prayer_end()
+    if opening_prayer_end then
+        local max_gap_seconds = 600
+        for _, idx in ipairs(candidates) do
+            if idx > opening_prayer_end then
+                local gap = cues[idx].start - cues[opening_prayer_end].start
+                local ratio = cues[idx].start / total_duration
+                if gap <= max_gap_seconds and ratio <= max_ratio then
+                    if debug then
+                        print("DEBUG opening_prayer_end_index=" .. opening_prayer_end .. " text=" .. cues[opening_prayer_end].text)
+                    end
+                    return idx
+                end
+            end
+        end
+    end
+
+    local best_index = nil
+    local best_score = -9999
+    for _, idx in ipairs(candidates) do
+        local cue = cues[idx]
+        local score = 0
+        local ratio = cue.start / total_duration
+
+        if ratio < hard_min_ratio then
+            score = score - 6
+        elseif ratio < min_ratio then
+            score = score - 3
+        else
+            score = score + 1
+        end
+
+        if ratio > 0.9 then
+            score = score - 4
+        elseif ratio > max_ratio then
+            score = score - 2
+        end
+
+        local last_prayer_end = last_marker_before(idx, lowered_prayer_end_markers, 300)
+        if last_prayer_end then
+            score = score + 3
+        end
+
+        local last_prayer_start = last_marker_before(idx, lowered_prayer_start_markers, 600)
+        if last_prayer_start then
+            score = score + 2
+        end
+
+        local last_music = last_marker_before(idx, music_markers, 1200)
+        if last_music then
+            score = score + 1
+        end
+
+        if has_marker(cue.haystack, strong_sermon_markers) then
+            score = score + 2
+        end
+
+        if score > best_score or (score == best_score and (not best_index or cues[idx].start > cues[best_index].start)) then
+            best_score = score
+            best_index = idx
+        end
+    end
+
+    if debug and best_index then
+        print("DEBUG best_sermon_score=" .. best_score .. " candidate_count=" .. #candidates)
+    end
+
+    return best_index
+end
+
+local sermon_marker_index = choose_sermon_marker()
 
 if not sermon_marker_index then
     print("ERROR: No sermon markers found.")

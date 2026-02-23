@@ -1,5 +1,21 @@
 # Communication Log
 
+## 2026-02-23: Improved Sermon Window Detection For 2⧸8 Livestream
+
+**What I changed:**
+- Updated `scripts/find_sermon_window.lua` to prefer a sermon marker that follows
+  the opening prayer (prayer start/end) and a nearby worship segment, instead of
+  always picking the first marker in the transcript.
+- Added score penalties for markers that occur too early or too late in the
+  service to avoid prelude or closing material.
+
+**Result (2⧸8 captions):**
+- Start: `00:23:07.750`
+- End: `00:49:18.720`
+
+**Sermon export:**
+- Output: `media/Roots Community Church Livestream 2⧸8⧸26 [zPzG6gRlke8] - Sermon.mkv`
+
 ## 2026-02-23: Quieted ffmpeg Output For Sermon Exports
 
 **What I changed:**
