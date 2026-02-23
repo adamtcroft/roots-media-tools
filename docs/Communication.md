@@ -1,5 +1,20 @@
 # Communication Log
 
+## 2026-02-23: Downloaded Fresh 2⧸8 Livestream and Exported Sermon
+
+**What I changed:**
+- Removed prior 2⧸8 assets from `media/` and re-downloaded from YouTube (ID `zPzG6gRlke8`).
+- Ran `find_sermon_window.lua` on the fresh captions to detect the window.
+- Exported a re-encoded sermon clip with quiet ffmpeg output.
+
+**Detected window (2⧸8 captions):**
+- Start: `00:23:05.909`
+- End: `00:49:19.200`
+
+**Output:**
+- `media/Roots Community Church Livestream 2⧸8⧸26 [zPzG6gRlke8] - Sermon.mkv`
+- Duration: `1573.333` seconds (~26m 13s)
+
 ## 2026-02-23: Improved Sermon Window Detection For 2⧸8 Livestream
 
 **What I changed:**
