@@ -1,5 +1,25 @@
 # Communication Log
 
+## 2026-02-23: Added Sermon Window Detector With Prayer/Response Heuristics
+
+**What I changed:**
+- Added `scripts/find_sermon_window.lua` to detect sermon start/end from VTT by:
+  - Skipping the opening prayer (uses the last `amen` before the sermon marker).
+  - Ending at the first response/transition cue (e.g., "would you just respond").
+  - Falling back to music/prayer heuristics if response cues aren’t present.
+- Tightened sermon marker matching to avoid false positives from Bible book names
+  like “Job/Mark/John” unless followed by chapter numbers.
+
+**How to use:**
+```bash
+lua scripts/find_sermon_window.lua media/<captions>.vtt
+lua scripts/find_sermon_window.lua media/<captions>.vtt --debug
+```
+
+**Current result (2⧸15 livestream captions):**
+- Start: `00:22:27.840`
+- End: `00:52:13.520`
+
 ## 2026-02-23: Latest Livestream Downloaded, Sermon Window Found, Clip Exported (Fast Mode)
 
 **What I changed:**

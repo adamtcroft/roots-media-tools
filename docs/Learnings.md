@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-02-23: Use Response Cues and [music] Tags to End Sermon
+
+- Auto-captions often include phrases like “would you just respond” or `[music]` near the sermon-to-music transition.
+- Ending the sermon at the first response cue after the opening prayer avoids keeping the closing prayer in the sermon clip.
+
+---
+
 ## 2026-02-23: Use VTT Phrase Scan When Markers Miss Sermon Start
 
 - When `find_sermon_start.lua --auto` returns `NOT FOUND`, use `find_vtt_phrase.lua` to scan for spoken phrases like "sermon series" or scripture references to locate a reliable start cue.
