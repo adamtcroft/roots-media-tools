@@ -1,5 +1,11 @@
 # Learnings
 
+## 2026-02-23: Use VTT Phrase Scan When Markers Miss Sermon Start
+
+- When `find_sermon_start.lua --auto` returns `NOT FOUND`, use `find_vtt_phrase.lua` to scan for spoken phrases like "sermon series" or scripture references to locate a reliable start cue.
+
+---
+
 ## 2026-02-22: Prefer Re-Encode Default for Timestamp-Exact Sermon Clips
 
 - `ffmpeg -c copy` can produce clip durations that drift from requested start/end boundaries because cuts are keyframe-aligned.
