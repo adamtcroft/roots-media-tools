@@ -1,5 +1,22 @@
 # Communication Log
 
+## 2026-02-24: Sermon End Now Includes Closing Prayer After “Pray With Me”
+
+**What I changed:**
+- Updated `scripts/find_sermon_window.lua` to include the closing prayer when a
+  “pray with me” / “would you pray” cue is detected near the end of the sermon.
+- Sermon end now prefers:
+  - The last `amen` shortly after that cue (when present), otherwise
+  - The start of sustained music-only `[music]` (or the next worship/song cue).
+
+**Validation:**
+- 2⧸8 captions:
+  - Start: `00:23:05.919`
+  - End: `00:51:51.940`
+- 2⧸15 captions (also still the most recent item in `@rootscommunitychurch2868/streams` as of 2026-02-24):
+  - Start: `00:22:32.070`
+  - End: `00:54:32.000`
+
 ## 2026-02-23: Sermon Window Start Now Anchors To First Greeting After Prayer
 
 **What I changed:**

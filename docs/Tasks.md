@@ -1,2 +1,2 @@
-- Improve sermon end detection to include the closing prayer when "pray with me" (or equivalent) is spoken, and end right after the final "amen" before music. Validate on Feb 8, Feb 15, and the latest available livestream.
-- Add video+audio fade in/out to exports (default 1.0s each, configurable). Validate on Feb 8, Feb 15, and the latest available livestream.
+- Add video+audio fade in/out to exports (default 1.0s each, configurable). 
+  Validate on Feb 8, Feb 15, and the latest available livestream.

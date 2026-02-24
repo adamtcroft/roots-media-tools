@@ -295,6 +295,19 @@ local strong_end_transition_markers = normalize_markers({
     "would you just respond"
 })
 
+local post_prayer_transition_markers = normalize_markers({
+    "let's all stand",
+    "stand in worship",
+    "let's stand",
+    "please stand",
+    "stand and",
+    "let's sing",
+    "sing together",
+    "we're going to sing",
+    "next song",
+    "song"
+})
+
 local function text_has_marker(text, markers)
     for _, marker in ipairs(markers) do
         if marker:find("%s") then
@@ -630,6 +643,18 @@ local closing_prayer_index = nil
 local total_duration = cues[#cues]["end"]
 local closing_prayer_min_time = total_duration * closing_prayer_min_ratio
 local min_end_time = sermon_start_time + min_sermon_seconds
+
+local function cue_is_prayer_start(index)
+    return text_has_marker(cues[index].haystack, lowered_prayer_start_markers)
+        or text_has_marker(cues[index].haystack, secondary_prayer_start_markers)
+end
+
+local function cue_is_music_only(index)
+    local text = cues[index].haystack:gsub("^%s+", ""):gsub("%s+$", "")
+    text = text:gsub("^>+%s*", "")
+    return text == "[music]"
+end
+
 for idx = sermon_start_index, #cues do
     if cues[idx].start >= min_end_time
         and text_has_marker(cues[idx].haystack, end_transition_markers) then
@@ -643,6 +668,20 @@ for idx = sermon_start_index, #cues do
     end
     ::continue_end_transition::
 end
+
+if closing_prayer_index and not cue_is_prayer_start(closing_prayer_index) then
+    local base_time = cues[closing_prayer_index].start
+    for idx = closing_prayer_index + 1, #cues do
+        if (cues[idx].start - base_time) > secondary_prayer_max_gap_seconds then
+            break
+        end
+        if cue_is_prayer_start(idx) then
+            closing_prayer_index = idx
+            break
+        end
+    end
+end
+
 local first_music_index = nil
 if not closing_prayer_index then
     for idx = sermon_start_index, #cues do
@@ -754,7 +793,80 @@ end
 local sermon_end_time = nil
 
 if closing_prayer_index and closing_prayer_index > sermon_start_index then
-    sermon_end_time = cues[closing_prayer_index].start
+    if cue_is_prayer_start(closing_prayer_index) then
+        local base_time = cues[closing_prayer_index].start
+        local last_amen_index = nil
+        for idx = closing_prayer_index, #cues do
+            if (cues[idx].start - base_time) > closing_prayer_max_gap_seconds then
+                break
+            end
+            if text_has_marker(cues[idx].haystack, lowered_prayer_end_markers) then
+                last_amen_index = idx
+            end
+        end
+
+        if last_amen_index then
+            sermon_end_time = cues[last_amen_index]["end"]
+            if debug then
+                print("DEBUG closing_prayer_end_index=" .. last_amen_index .. " text=" .. cues[last_amen_index].text)
+            end
+        else
+            local music_only_index = nil
+            for idx = closing_prayer_index, #cues do
+                if (cues[idx].start - base_time) > closing_prayer_max_gap_seconds then
+                    break
+                end
+                if cue_is_music_only(idx) then
+                    local music_only_window_seconds = 20
+                    local music_only_min_total_seconds = 10
+                    local window_start = cues[idx].start
+                    local music_only_seconds = 0
+
+                    for j = idx, #cues do
+                        if (cues[j].start - window_start) > music_only_window_seconds then
+                            break
+                        end
+                        if cue_is_music_only(j) then
+                            music_only_seconds = music_only_seconds + (cues[j]["end"] - cues[j].start)
+                        end
+                    end
+
+                    if music_only_seconds >= music_only_min_total_seconds then
+                        music_only_index = idx
+                        break
+                    end
+                end
+            end
+
+            if music_only_index then
+                sermon_end_time = cues[music_only_index].start
+                if debug then
+                    print("DEBUG closing_prayer_music_only_index=" .. music_only_index .. " text=" .. cues[music_only_index].text)
+                end
+                goto continue_sermon_end
+            end
+
+            local post_prayer_transition_index = nil
+            for idx = closing_prayer_index, #cues do
+                if (cues[idx].start - base_time) > closing_prayer_max_gap_seconds then
+                    break
+                end
+                if text_has_marker(cues[idx].haystack, post_prayer_transition_markers) then
+                    post_prayer_transition_index = idx
+                    break
+                end
+            end
+
+            if post_prayer_transition_index then
+                sermon_end_time = cues[post_prayer_transition_index].start
+            else
+                sermon_end_time = cues[#cues]["end"]
+            end
+        end
+        ::continue_sermon_end::
+    else
+        sermon_end_time = cues[closing_prayer_index].start
+    end
 else
     sermon_end_time = cues[#cues]["end"]
 end

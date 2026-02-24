@@ -1,5 +1,12 @@
 # Learnings
 
+## 2026-02-24: Don’t Treat The First `[music]` Cue As “Music Starts”
+
+- Auto-captions can insert tiny standalone `[music]` cues mid-sentence (even during spoken prayer), so using the *first* `[music]` as a cut boundary can end the sermon too early.
+- When a closing `amen` isn’t present, a better fallback is the start of a *sustained* music-only run (e.g., ≥10 seconds of `[music]` within ~20 seconds).
+
+---
+
 ## 2026-02-23: Anchor Sermon Start To Nearby Greeting Cue (Not Prayer-Exit Fragment)
 
 - YouTube auto-captions often repeat/overlap text across adjacent cues, which can make a “prayer end + 1 cue” start feel like it begins mid-thought.
