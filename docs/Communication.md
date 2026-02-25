@@ -1,5 +1,18 @@
 # Communication Log
 
+## 2026-02-25: Sermon Exports Now Include Default Video+Audio Fade In/Out
+
+**What I changed:**
+- Updated `scripts/export_sermon_clip.lua` to apply `ffmpeg` video+audio fades by default in re-encode mode:
+  - Fade-in: `1.0s`
+  - Fade-out: `1.0s`
+- Added flags: `--fade <s>`, `--fade-in <s>`, `--fade-out <s>`, `--no-fade`.
+- `--copy` mode can’t apply fades; it now defaults to no-fade (and errors if you explicitly request fades with `--copy`).
+
+**Validation (fast excerpts):**
+- 2⧸8 source (`zPzG6gRlke8`): exported `00:23:05.919` → `00:23:25.919` with default fades (20.021s output).
+- 2⧸15 source (`Weg3jKN5Vl4`): exported `00:22:32.070` → `00:22:52.070` with default fades (20.021s output).
+
 ## 2026-02-24: Sermon End Now Includes Closing Prayer After “Pray With Me”
 
 **What I changed:**

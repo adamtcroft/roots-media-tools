@@ -5,7 +5,9 @@
     Export a sermon-only clip from a source video using explicit start/end times.
 
     Usage:
-      lua export_sermon_clip.lua <input_video> --start <time> --end <time> [--output <file>] [--copy]
+      lua export_sermon_clip.lua <input_video> --start <time> --end <time> [--output <file>] [--copy] [--fade <seconds>]
+      lua export_sermon_clip.lua <input_video> --start <time> --end <time> [--output <file>] [--copy] [--fade-in <seconds>] [--fade-out <seconds>]
+      lua export_sermon_clip.lua <input_video> --start <time> --end <time> [--output <file>] [--copy] [--no-fade]
 
     Time format:
       - HH:MM:SS
@@ -14,7 +16,7 @@
 --]]
 
 local function usage()
-    print("Usage: lua export_sermon_clip.lua <input_video> --start <time> --end <time> [--output <file>] [--copy]")
+    print("Usage: lua export_sermon_clip.lua <input_video> --start <time> --end <time> [--output <file>] [--copy] [--fade <seconds>] [--fade-in <seconds>] [--fade-out <seconds>] [--no-fade]")
 end
 
 local function trim(text)
@@ -90,6 +92,9 @@ local start_raw = nil
 local ending_raw = nil
 local output_path = nil
 local use_copy = false
+local fade_in_seconds = 1.0
+local fade_out_seconds = 1.0
+local fade_user_provided = false
 
 local i = 1
 while i <= #arg do
@@ -105,6 +110,38 @@ while i <= #arg do
         output_path = arg[i]
     elseif value == "--copy" then
         use_copy = true
+    elseif value == "--fade" then
+        i = i + 1
+        local parsed = tonumber(arg[i])
+        if not parsed or parsed < 0 then
+            print("ERROR: Invalid --fade value: " .. tostring(arg[i]))
+            os.exit(1)
+        end
+        fade_in_seconds = parsed
+        fade_out_seconds = parsed
+        fade_user_provided = true
+    elseif value == "--fade-in" then
+        i = i + 1
+        local parsed = tonumber(arg[i])
+        if not parsed or parsed < 0 then
+            print("ERROR: Invalid --fade-in value: " .. tostring(arg[i]))
+            os.exit(1)
+        end
+        fade_in_seconds = parsed
+        fade_user_provided = true
+    elseif value == "--fade-out" then
+        i = i + 1
+        local parsed = tonumber(arg[i])
+        if not parsed or parsed < 0 then
+            print("ERROR: Invalid --fade-out value: " .. tostring(arg[i]))
+            os.exit(1)
+        end
+        fade_out_seconds = parsed
+        fade_user_provided = true
+    elseif value == "--no-fade" then
+        fade_in_seconds = 0
+        fade_out_seconds = 0
+        fade_user_provided = true
     elseif not input_path then
         input_path = value
     else
@@ -138,6 +175,27 @@ if end_seconds <= start_seconds then
     os.exit(1)
 end
 
+local duration_seconds = end_seconds - start_seconds
+if use_copy and (fade_in_seconds > 0 or fade_out_seconds > 0) then
+    if fade_user_provided then
+        print("ERROR: Fade in/out requires re-encode mode. Remove --copy or pass --no-fade/--fade 0.")
+        os.exit(1)
+    end
+    fade_in_seconds = 0
+    fade_out_seconds = 0
+end
+
+if not use_copy and (fade_in_seconds > 0 or fade_out_seconds > 0) then
+    if fade_in_seconds > duration_seconds or fade_out_seconds > duration_seconds then
+        print("ERROR: Fade durations must be <= clip duration.")
+        os.exit(1)
+    end
+    if (fade_in_seconds + fade_out_seconds) > duration_seconds then
+        print("ERROR: Fade-in + fade-out cannot exceed clip duration.")
+        os.exit(1)
+    end
+end
+
 local source_check = io.open(input_path, "rb")
 if not source_check then
     print("ERROR: Input video not found: " .. input_path)
@@ -153,7 +211,7 @@ if not output_path then
 end
 
 local start_ff = format_time(start_seconds)
-local duration_ff = format_time(end_seconds - start_seconds)
+local duration_ff = format_time(duration_seconds)
 local end_ff = format_time(end_seconds)
 
 if not command_succeeds("ffmpeg -version >/dev/null 2>&1") then
@@ -163,6 +221,33 @@ end
 
 local cmd_parts
 local ffmpeg_base = "ffmpeg -hide_banner -loglevel error -nostats -y"
+local vf = nil
+local af = nil
+if not use_copy and (fade_in_seconds > 0 or fade_out_seconds > 0) then
+    local function fmt_filter_seconds(value)
+        return string.format("%.3f", value)
+    end
+
+    local v_filters = {}
+    local a_filters = {}
+    if fade_in_seconds > 0 then
+        table.insert(v_filters, "fade=t=in:st=0:d=" .. fmt_filter_seconds(fade_in_seconds))
+        table.insert(a_filters, "afade=t=in:st=0:d=" .. fmt_filter_seconds(fade_in_seconds))
+    end
+    if fade_out_seconds > 0 then
+        local fade_out_start = duration_seconds - fade_out_seconds
+        table.insert(v_filters, "fade=t=out:st=" .. fmt_filter_seconds(fade_out_start) .. ":d=" .. fmt_filter_seconds(fade_out_seconds))
+        table.insert(a_filters, "afade=t=out:st=" .. fmt_filter_seconds(fade_out_start) .. ":d=" .. fmt_filter_seconds(fade_out_seconds))
+    end
+
+    if #v_filters > 0 then
+        vf = table.concat(v_filters, ",")
+    end
+    if #a_filters > 0 then
+        af = table.concat(a_filters, ",")
+    end
+end
+
 if use_copy then
     cmd_parts = {
         ffmpeg_base,
@@ -178,12 +263,20 @@ else
         "-ss " .. start_ff,
         "-i " .. shell_quote(input_path),
         "-t " .. duration_ff,
+        vf and ("-vf " .. shell_quote(vf)) or nil,
+        af and ("-af " .. shell_quote(af)) or nil,
         "-c:v libx264 -crf 18 -preset medium",
         "-c:a aac -b:a 192k",
         shell_quote(output_path)
     }
 end
-local cmd = table.concat(cmd_parts, " ")
+local compact_parts = {}
+for _, part in ipairs(cmd_parts) do
+    if part ~= nil then
+        table.insert(compact_parts, part)
+    end
+end
+local cmd = table.concat(compact_parts, " ")
 
 print("Exporting sermon clip...")
 print("Input:  " .. input_path)
@@ -191,6 +284,11 @@ print("Start:  " .. start_ff)
 print("End:    " .. end_ff)
 print("Output: " .. output_path)
 print("Mode:   " .. (use_copy and "stream copy (fast, less precise)" or "re-encode (accurate boundaries)"))
+if fade_in_seconds > 0 or fade_out_seconds > 0 then
+    print(string.format("Fade:   in %.3fs, out %.3fs", fade_in_seconds, fade_out_seconds))
+else
+    print("Fade:   none")
+end
 print("")
 
 if not command_succeeds(cmd) then

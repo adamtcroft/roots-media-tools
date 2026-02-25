@@ -1,5 +1,11 @@
 # Learnings
 
+## 2026-02-25: ffmpeg Fades Require Re-Encode (Not Stream Copy)
+
+- `-c copy` cannot apply video/audio filters like `fade`/`afade`; scripts should either auto-disable fades in copy mode (with clear output) or fail fast if the user explicitly requested fades while copying.
+
+---
+
 ## 2026-02-24: Don’t Treat The First `[music]` Cue As “Music Starts”
 
 - Auto-captions can insert tiny standalone `[music]` cues mid-sentence (even during spoken prayer), so using the *first* `[music]` as a cut boundary can end the sermon too early.
